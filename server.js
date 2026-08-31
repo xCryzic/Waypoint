@@ -247,7 +247,8 @@ app.delete('/api/connections/:id', auth, (req, res) => {
   res.status(204).end();
 });
 
-app.use(express.static(path.join(root, 'public'), { extensions: ['html'] }));
+app.use('/public', express.static(path.join(root, 'public')));
+app.get('/', (req, res) => res.sendFile(path.join(root, 'index.html')));
 app.use('/api', (req, res) => res.status(404).json({ error: 'Nothing was found here.' }));
 app.use((error, req, res, next) => {
   console.error(error);
