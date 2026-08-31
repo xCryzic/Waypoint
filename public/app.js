@@ -1,5 +1,10 @@
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
+const NODE_WIDTH = 168;
+const NODE_HEIGHT = 72;
+const CANVAS_MIN_WIDTH = 1400;
+const CANVAS_MIN_HEIGHT = 900;
+const CANVAS_PADDING = 240;
 
 const state = {
   user: null,
@@ -123,8 +128,42 @@ function renderRoadmap() {
   $('#complete-goal-button').textContent = complete ? '[ REOPEN QUEST ]' : '[ COMPLETE QUEST ]';
   $('#complete-goal-button').classList.toggle('complete', !complete);
   $('#board-empty').classList.toggle('hidden', total > 0);
+  updateCanvasSize();
   renderNodes();
   renderConnections();
+}
+
+function updateCanvasSize(extraX = 0, extraY = 0) {
+  const board = $('#roadmap-board');
+  if (!board) return { width: CANVAS_MIN_WIDTH, height: CANVAS_MIN_HEIGHT };
+  const furthestX = Math.max(extraX, ...state.milestones.map(item => Number(item.x) || 0));
+  const furthestY = Math.max(extraY, ...state.milestones.map(item => Number(item.y) || 0));
+  const columns = Math.max(3, Math.floor((Math.max(board.clientWidth, 900) - 100) / 230));
+  const naturalRows = Math.ceil(Math.max(state.milestones.length, 1) / columns);
+  const width = Math.ceil(Math.max(CANVAS_MIN_WIDTH, board.clientWidth, furthestX + NODE_WIDTH + CANVAS_PADDING));
+  const height = Math.ceil(Math.max(CANVAS_MIN_HEIGHT, naturalRows * 140 + 220, furthestY + NODE_HEIGHT + CANVAS_PADDING));
+  const svg = $('#connections-layer');
+  const layer = $('#node-layer');
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', height);
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.style.width = `${width}px`;
+  svg.style.height = `${height}px`;
+  layer.style.width = `${width}px`;
+  layer.style.height = `${height}px`;
+  return { width, height };
+}
+
+function findOpenMilestonePosition() {
+  const board = $('#roadmap-board');
+  const columns = Math.max(3, Math.floor((Math.max(board.clientWidth, 900) - 100) / 230));
+  for (let slot = 0; slot < state.milestones.length + columns * 3; slot += 1) {
+    const x = 72 + (slot % columns) * 230;
+    const y = 72 + Math.floor(slot / columns) * 140;
+    const occupied = state.milestones.some(item => Math.abs(item.x - x) < 190 && Math.abs(item.y - y) < 95);
+    if (!occupied) return { x, y };
+  }
+  return { x: 72, y: 72 + Math.ceil(state.milestones.length / columns) * 140 };
 }
 
 function renderNodes() {
@@ -158,7 +197,8 @@ function startNodePointer(event) {
   if (state.connectMode) { event.preventDefault(); selectConnectionNode(id); return; }
   if (state.removePathMode) return;
   const milestone = state.milestones.find(m => m.id === id);
-  state.drag = { id, node: event.currentTarget, startX: event.clientX, startY: event.clientY, x: milestone.x, y: milestone.y, moved: false };
+  const board = $('#roadmap-board');
+  state.drag = { id, node: event.currentTarget, startX: event.clientX, startY: event.clientY, x: milestone.x, y: milestone.y, scrollLeft: board.scrollLeft, scrollTop: board.scrollTop, moved: false };
   event.currentTarget.setPointerCapture(event.pointerId);
   event.currentTarget.addEventListener('pointermove', moveNodePointer);
   event.currentTarget.addEventListener('pointerup', endNodePointer, { once: true });
@@ -167,14 +207,22 @@ function startNodePointer(event) {
 
 function moveNodePointer(event) {
   if (!state.drag) return;
-  const dx = event.clientX - state.drag.startX, dy = event.clientY - state.drag.startY;
+  const board = $('#roadmap-board');
+  const bounds = board.getBoundingClientRect();
+  if (event.clientX > bounds.right - 38) board.scrollLeft += 18;
+  if (event.clientX < bounds.left + 38) board.scrollLeft -= 18;
+  if (event.clientY > bounds.bottom - 38) board.scrollTop += 18;
+  if (event.clientY < bounds.top + 38) board.scrollTop -= 18;
+  const dx = event.clientX - state.drag.startX + board.scrollLeft - state.drag.scrollLeft;
+  const dy = event.clientY - state.drag.startY + board.scrollTop - state.drag.scrollTop;
   if (Math.abs(dx) + Math.abs(dy) > 4) state.drag.moved = true;
-  const x = Math.max(24, Math.min(1208, state.drag.x + dx));
-  const y = Math.max(24, Math.min(820, state.drag.y + dy));
+  const x = Math.max(24, Math.min(20000, state.drag.x + dx));
+  const y = Math.max(24, Math.min(20000, state.drag.y + dy));
   state.drag.node.style.left = `${x}px`;
   state.drag.node.style.top = `${y}px`;
   const milestone = state.milestones.find(m => m.id === state.drag.id);
   milestone.x = x; milestone.y = y;
+  updateCanvasSize(x, y);
   renderConnections();
 }
 
@@ -366,6 +414,11 @@ $('#add-milestone-button').addEventListener('click', openNewMilestone);
 $('#connect-button').addEventListener('click', toggleConnectMode);
 $('#remove-path-button').addEventListener('click', toggleRemovePathMode);
 
+$$('[data-close-dialog]').forEach(button => button.addEventListener('click', () => {
+  const dialog = button.closest('dialog');
+  if (dialog?.open) dialog.close('cancel');
+}));
+
 $('#delete-goal-button').addEventListener('click', async () => {
   const goal = state.currentGoal;
   $('#goal-dialog').close();
@@ -385,9 +438,9 @@ $('#milestone-form').addEventListener('submit', async event => {
       payload.completed = $('#milestone-complete-input').checked;
       await api(`/api/milestones/${state.milestoneEditId}`, { method: 'PATCH', body: JSON.stringify(payload) });
     } else {
-      const board = $('#roadmap-board');
-      payload.x = Math.min(1120, board.scrollLeft + board.clientWidth / 2 - 84);
-      payload.y = Math.min(760, board.scrollTop + board.clientHeight / 2 - 31);
+      const openPosition = findOpenMilestonePosition();
+      payload.x = openPosition.x;
+      payload.y = openPosition.y;
       await api(`/api/goals/${state.currentGoal.id}/milestones`, { method: 'POST', body: JSON.stringify(payload) });
     }
     $('#milestone-dialog').close(); await refreshCurrentGoal(); toast(state.milestoneEditId ? 'MILESTONE UPDATED' : 'WAYPOINT ADDED');

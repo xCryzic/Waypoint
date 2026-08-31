@@ -30,7 +30,7 @@ class QuestApiTest(unittest.TestCase):
         second = self.client.post(f"/api/goals/{goal['id']}/milestones", json={"title": "Scene", "x": 420, "y": 360}).get_json()["milestone"]
         response = self.client.post(f"/api/goals/{goal['id']}/connections", json={"sourceId": first["id"], "targetId": second["id"]})
         self.assertEqual(response.status_code, 201)
-        self.client.patch(f"/api/milestones/{first['id']}", json={"completed": True, "notes": "Finished", "x": 180})
+        self.client.patch(f"/api/milestones/{first['id']}", json={"completed": True, "notes": "Finished", "x": 5180, "y": 2460})
         self.client.patch(f"/api/goals/{goal['id']}", json={"status": "COMPLETED"})
 
         saved = self.client.get(f"/api/goals/{goal['id']}").get_json()
@@ -38,7 +38,8 @@ class QuestApiTest(unittest.TestCase):
         self.assertIsNotNone(saved["goal"]["completedAt"])
         self.assertEqual(len(saved["milestones"]), 2)
         self.assertTrue(saved["milestones"][0]["completed"])
-        self.assertEqual(saved["milestones"][0]["x"], 180)
+        self.assertEqual(saved["milestones"][0]["x"], 5180)
+        self.assertEqual(saved["milestones"][0]["y"], 2460)
         self.assertEqual(len(saved["connections"]), 1)
 
         self.client.post("/api/auth/logout")

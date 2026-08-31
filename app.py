@@ -376,8 +376,8 @@ def register_routes(app):
             title=title,
             description=clean_text(data.get("description"), 400),
             notes=clean_text(data.get("notes"), 2000),
-            x=max(24, min(1376, float(data.get("x") or 100))),
-            y=max(24, min(876, float(data.get("y") or 100))),
+            x=max(24, min(20000, float(data.get("x") or 100))),
+            y=max(24, min(20000, float(data.get("y") or 100))),
         )
         db.session.add(milestone)
         db.session.commit()
@@ -400,9 +400,9 @@ def register_routes(app):
         if "notes" in data:
             milestone.notes = clean_text(data.get("notes"), 2000)
         if "x" in data:
-            milestone.x = max(24, min(1376, float(data.get("x") or 24)))
+            milestone.x = max(24, min(20000, float(data.get("x") or 24)))
         if "y" in data:
-            milestone.y = max(24, min(876, float(data.get("y") or 24)))
+            milestone.y = max(24, min(20000, float(data.get("y") or 24)))
         if "completed" in data:
             completed = bool(data["completed"])
             milestone.completed = completed

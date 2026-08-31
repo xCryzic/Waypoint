@@ -82,24 +82,24 @@
 
   <dialog id="goal-dialog" class="pixel-dialog">
     <form id="goal-form" method="dialog">
-      <div class="dialog-title"><div><p class="eyebrow">QUEST RECORD</p><h3 id="goal-dialog-title">NEW QUEST</h3></div><button class="icon-button" value="cancel" aria-label="Close">×</button></div>
+      <div class="dialog-title"><div><p class="eyebrow">QUEST RECORD</p><h3 id="goal-dialog-title">NEW QUEST</h3></div><button class="icon-button" type="button" data-close-dialog aria-label="Close">×</button></div>
       <label>QUEST NAME <em>REQUIRED</em><input id="goal-title-input" maxlength="80" required placeholder="e.g. LEARN BLENDER"></label>
       <label>DESCRIPTION<textarea id="goal-description-input" maxlength="500" rows="3" placeholder="What does this quest mean to you?"></textarea></label>
       <div class="field-row"><label>CATEGORY<input id="goal-category-input" maxlength="32" placeholder="CRAFT"></label><label class="icon-field">SYMBOL<input id="goal-icon-input" maxlength="4" value="◆"></label></div>
       <p id="goal-error" class="form-error" role="alert"></p>
-      <div class="dialog-actions split"><button id="delete-goal-button" class="button danger hidden" type="button">DELETE QUEST</button><div><button class="button" value="cancel">CANCEL</button><button id="save-goal-button" class="button primary" type="submit" value="default">SAVE QUEST</button></div></div>
+      <div class="dialog-actions split"><button id="delete-goal-button" class="button danger hidden" type="button">DELETE QUEST</button><div><button class="button" type="button" data-close-dialog>CANCEL</button><button id="save-goal-button" class="button primary" type="submit" value="default">SAVE QUEST</button></div></div>
     </form>
   </dialog>
 
   <dialog id="milestone-dialog" class="pixel-dialog milestone-dialog">
     <form id="milestone-form" method="dialog">
-      <div class="dialog-title"><div><p class="eyebrow">WAYPOINT DATA</p><h3 id="milestone-dialog-title">NEW MILESTONE</h3></div><button class="icon-button" value="cancel" aria-label="Close">×</button></div>
+      <div class="dialog-title"><div><p class="eyebrow">WAYPOINT DATA</p><h3 id="milestone-dialog-title">NEW MILESTONE</h3></div><button class="icon-button" type="button" data-close-dialog aria-label="Close">×</button></div>
       <label>TITLE <em>REQUIRED</em><input id="milestone-title-input" maxlength="60" required></label>
       <label>DESCRIPTION<textarea id="milestone-description-input" maxlength="400" rows="2" placeholder="What needs to be done?"></textarea></label>
       <label>FIELD NOTES<textarea id="milestone-notes-input" maxlength="2000" rows="5" placeholder="Links, thoughts, reminders..."></textarea></label>
       <label id="milestone-complete-row" class="check-row hidden"><input id="milestone-complete-input" type="checkbox"><span class="pixel-check"></span> MILESTONE COMPLETE</label>
       <p id="milestone-error" class="form-error" role="alert"></p>
-      <div class="dialog-actions split"><button id="delete-milestone-button" class="button danger hidden" type="button">DELETE</button><div><button class="button" value="cancel">CANCEL</button><button class="button primary" type="submit" value="default">SAVE</button></div></div>
+      <div class="dialog-actions split"><button id="delete-milestone-button" class="button danger hidden" type="button">DELETE</button><div><button class="button" type="button" data-close-dialog>CANCEL</button><button class="button primary" type="submit" value="default">SAVE</button></div></div>
     </form>
   </dialog>
 

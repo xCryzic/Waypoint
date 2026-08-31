@@ -105,13 +105,15 @@ textarea { resize: vertical; }
 .board-tools { margin-top: 27px; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 .board-tools p { margin: 0; color: var(--muted); font: 9px var(--display); }
 .roadmap-board { position: relative; height: min(67vh, 720px); min-height: 470px; border: 2px solid var(--ink); overflow: auto; background-color: #e6e0cf; background-image: radial-gradient(var(--line-soft) 1px, transparent 1px); background-size: 24px 24px; box-shadow: inset 0 0 0 5px rgba(255,255,255,.18); }
-.connections-layer, .node-layer { position: absolute; top: 0; left: 0; width: 1400px; height: 900px; }
+.connections-layer, .node-layer { position: absolute; top: 0; left: 0; min-width: 100%; min-height: 100%; }
 .connections-layer { overflow: visible; pointer-events: none; }
+.node-layer { pointer-events: none; }
 .connection { fill: none; stroke: var(--blue); stroke-width: 2; marker-end: url(#arrow); }
 .connection.hit { stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: pointer; marker-end: none; }
 .roadmap-board.path-remove-mode .connections-layer { pointer-events: auto; }
 .roadmap-board.path-remove-mode .connection.hit:hover { stroke: rgba(121,75,67,.26); }
 .milestone-node { position: absolute; width: 168px; min-height: 62px; border: 2px solid var(--ink); background: #f1ecdc; box-shadow: 4px 4px 0 var(--shadow); padding: 10px 12px; user-select: none; touch-action: none; cursor: grab; }
+.milestone-node { pointer-events: auto; }
 .milestone-node::before { content: ""; position: absolute; top: 4px; left: 4px; width: 4px; height: 4px; border-left: 1px solid var(--line); border-top: 1px solid var(--line); }
 .milestone-node:active { cursor: grabbing; }
 .milestone-node strong { display: block; padding-right: 14px; font: 700 11px/1.35 var(--display); text-transform: uppercase; overflow-wrap: anywhere; }
