@@ -1,23 +1,35 @@
 # WAYPOINT
 
-A personal goal and roadmap tracker styled like a faded old PC quest log.
+A personal goal and roadmap tracker styled like a faded old PC quest log. The application uses Flask for its API and Railway PostgreSQL for production data.
 
 ## Run locally
 
-Requires Node.js 22.5 or newer.
+Requires Python 3.11 or newer.
 
 ```sh
-npm install
-npm start
+python -m venv .venv
+.venv\Scripts\activate
+python -m pip install -r requirements.txt
+python app.py
 ```
 
-Open `http://localhost:3000`. Register with a username and a password of at least eight characters. Application data is stored in `data/waypoint.db`; that directory is created automatically on first launch.
+Open `http://localhost:3000`. When `DATABASE_URL` is absent, local development uses `data/waypoint.db` automatically.
 
-## Development
+## Deploy to Railway
+
+1. Push this repository to GitHub.
+2. In Railway, create a project and choose **Deploy from GitHub repo**.
+3. Add a PostgreSQL service to the same Railway project.
+4. In the web service's **Variables** tab, set `DATABASE_URL` to `${{Postgres.DATABASE_URL}}`.
+5. Add a stable `SECRET_KEY` containing a long random value.
+6. Under **Networking**, generate a public domain.
+
+Railway reads `railway.json`, installs `requirements.txt`, starts Gunicorn, and checks `/health`. Tables are created automatically during startup.
+
+## Tests
 
 ```sh
-npm run dev
-npm test
+python -m unittest discover -s test -v
 ```
 
-Authentication uses 64-byte scrypt password hashes with unique salts. Login sessions are random server-side tokens stored as SHA-256 hashes in SQLite and sent through HttpOnly, SameSite cookies.
+Passwords use Werkzeug's scrypt hashing. Production sessions are signed, HttpOnly, secure cookies. User data is stored in PostgreSQL rather than the deployment filesystem.
