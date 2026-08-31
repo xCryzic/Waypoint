@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#d8cfb5">
+  <title>WAYPOINT — Personal Quest Log</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="screen-grain" aria-hidden="true"></div>
+
+  <main id="auth-screen" class="auth-screen">
+    <section class="boot-panel" aria-labelledby="auth-title">
+      <div class="brand-mark" aria-hidden="true"><span>◆</span><i></i><i></i><i></i></div>
+      <p class="eyebrow">PERSONAL QUEST SYSTEM / REV. 1.0</p>
+      <h1 id="auth-title">WAYPOINT</h1>
+      <p class="boot-copy">Chart a quiet course.<br>Finish what matters.</p>
+      <div class="auth-tabs" role="tablist">
+        <button class="tab active" data-auth-mode="login" role="tab" aria-selected="true">[ SIGN IN ]</button>
+        <button class="tab" data-auth-mode="register" role="tab" aria-selected="false">[ NEW USER ]</button>
+      </div>
+      <form id="auth-form" class="stack-form">
+        <label>USERNAME<input id="auth-username" name="username" minlength="3" maxlength="24" pattern="[A-Za-z0-9_-]+" autocomplete="username" required></label>
+        <label>PASSWORD<input id="auth-password" name="password" type="password" minlength="8" maxlength="128" autocomplete="current-password" required></label>
+        <p id="auth-error" class="form-error" role="alert"></p>
+        <button id="auth-submit" class="button primary" type="submit">ENTER QUEST LOG</button>
+      </form>
+      <p class="boot-foot">LOCAL SAVE ENABLED <span class="status-light"></span></p>
+    </section>
+  </main>
+
+  <main id="app-screen" class="app-screen hidden">
+    <header class="topbar">
+      <button class="wordmark" data-nav="home" aria-label="Go to quest list"><span>◆</span> WAYPOINT</button>
+      <div class="topbar-right"><span id="player-name">USER: ---</span><span class="divider">//</span><button id="logout-button" class="text-button">LOG OUT</button></div>
+    </header>
+
+    <section id="home-view" class="view home-view">
+      <div class="view-heading">
+        <div><p class="eyebrow">QUEST DIRECTORY</p><h2>MY QUESTS</h2><p class="subtitle">Choose a path, or begin a new one.</p></div>
+        <button id="new-goal-button" class="button primary"><span>＋</span> NEW QUEST</button>
+      </div>
+      <nav class="quest-tabs" aria-label="Quest filters">
+        <button class="quest-tab active" data-status="ACTIVE">ACTIVE <span id="active-count">0</span></button>
+        <button class="quest-tab" data-status="COMPLETED">ARCHIVE <span id="complete-count">0</span></button>
+      </nav>
+      <div id="goal-list" class="goal-list" aria-live="polite"></div>
+    </section>
+
+    <section id="roadmap-view" class="view roadmap-view hidden">
+      <div class="quest-toolbar">
+        <button class="text-button back-button" data-nav="home">← QUEST LOG</button>
+        <div class="toolbar-actions">
+          <button id="edit-goal-button" class="button small">EDIT QUEST</button>
+          <button id="complete-goal-button" class="button complete">[ COMPLETE QUEST ]</button>
+        </div>
+      </div>
+      <div class="quest-header">
+        <div class="quest-icon" id="quest-icon">◆</div>
+        <div class="quest-heading-copy"><p id="quest-category" class="eyebrow"></p><h2 id="quest-title"></h2><p id="quest-description" class="subtitle"></p></div>
+        <div class="progress-module"><div class="progress-copy"><span>ROADMAP PROGRESS</span><strong id="progress-label">0 / 0</strong></div><div class="pixel-bar"><i id="progress-bar"></i></div></div>
+      </div>
+      <div class="board-tools">
+        <div class="board-tools-main">
+          <button id="add-milestone-button" class="button primary small">＋ ADD MILESTONE</button>
+          <button id="connect-button" class="button small">⌁ CONNECT</button>
+          <button id="remove-path-button" class="button small">✕ REMOVE PATH</button>
+        </div>
+        <p id="board-hint">DRAG TO ARRANGE • CLICK TO INSPECT</p>
+      </div>
+      <div id="roadmap-board" class="roadmap-board" tabindex="0" aria-label="Visual milestone roadmap">
+        <svg id="connections-layer" class="connections-layer" width="1400" height="900" viewBox="0 0 1400 900" aria-hidden="true">
+          <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"></path></marker></defs>
+          <g id="connection-lines"></g>
+        </svg>
+        <div id="node-layer" class="node-layer"></div>
+        <div id="board-empty" class="board-empty hidden"><span>◇</span><strong>NO WAYPOINTS YET</strong><p>Add your first milestone to begin mapping this quest.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="goal-dialog" class="pixel-dialog">
+    <form id="goal-form" method="dialog">
+      <div class="dialog-title"><div><p class="eyebrow">QUEST RECORD</p><h3 id="goal-dialog-title">NEW QUEST</h3></div><button class="icon-button" value="cancel" aria-label="Close">×</button></div>
+      <label>QUEST NAME <em>REQUIRED</em><input id="goal-title-input" maxlength="80" required placeholder="e.g. LEARN BLENDER"></label>
+      <label>DESCRIPTION<textarea id="goal-description-input" maxlength="500" rows="3" placeholder="What does this quest mean to you?"></textarea></label>
+      <div class="field-row"><label>CATEGORY<input id="goal-category-input" maxlength="32" placeholder="CRAFT"></label><label class="icon-field">SYMBOL<input id="goal-icon-input" maxlength="4" value="◆"></label></div>
+      <p id="goal-error" class="form-error" role="alert"></p>
+      <div class="dialog-actions split"><button id="delete-goal-button" class="button danger hidden" type="button">DELETE QUEST</button><div><button class="button" value="cancel">CANCEL</button><button id="save-goal-button" class="button primary" type="submit" value="default">SAVE QUEST</button></div></div>
+    </form>
+  </dialog>
+
+  <dialog id="milestone-dialog" class="pixel-dialog milestone-dialog">
+    <form id="milestone-form" method="dialog">
+      <div class="dialog-title"><div><p class="eyebrow">WAYPOINT DATA</p><h3 id="milestone-dialog-title">NEW MILESTONE</h3></div><button class="icon-button" value="cancel" aria-label="Close">×</button></div>
+      <label>TITLE <em>REQUIRED</em><input id="milestone-title-input" maxlength="60" required></label>
+      <label>DESCRIPTION<textarea id="milestone-description-input" maxlength="400" rows="2" placeholder="What needs to be done?"></textarea></label>
+      <label>FIELD NOTES<textarea id="milestone-notes-input" maxlength="2000" rows="5" placeholder="Links, thoughts, reminders..."></textarea></label>
+      <label id="milestone-complete-row" class="check-row hidden"><input id="milestone-complete-input" type="checkbox"><span class="pixel-check"></span> MILESTONE COMPLETE</label>
+      <p id="milestone-error" class="form-error" role="alert"></p>
+      <div class="dialog-actions split"><button id="delete-milestone-button" class="button danger hidden" type="button">DELETE</button><div><button class="button" value="cancel">CANCEL</button><button class="button primary" type="submit" value="default">SAVE</button></div></div>
+    </form>
+  </dialog>
+
+  <dialog id="confirm-dialog" class="pixel-dialog confirm-dialog">
+    <form method="dialog"><p class="eyebrow">SYSTEM PROMPT</p><h3 id="confirm-title">ARE YOU SURE?</h3><p id="confirm-copy"></p><div class="dialog-actions"><button class="button" value="cancel">CANCEL</button><button id="confirm-action" class="button danger" value="confirm">CONFIRM</button></div></form>
+  </dialog>
+
+  <dialog id="complete-dialog" class="pixel-dialog completion-dialog">
+    <div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
+    <p class="completion-spark">✦　·　✦</p><p class="eyebrow">RECORD UPDATED</p><h3>QUEST COMPLETE</h3><div id="completion-icon" class="completion-icon">◆</div><strong id="completion-title"></strong><p id="completion-stats"></p><button id="archive-button" class="button primary">VIEW ARCHIVE</button>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
