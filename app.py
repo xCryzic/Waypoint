@@ -70,13 +70,14 @@ class Connection(db.Model):
 
 def normalize_database_url(value):
     if not value:
-        data_dir = ROOT / "data"
-        data_dir.mkdir(exist_ok=True)
-        return f"sqlite:///{(data_dir / 'waypoint.db').as_posix()}"
+        raise RuntimeError("DATABASE_URL is not configured")
+
     if value.startswith("postgres://"):
         return value.replace("postgres://", "postgresql+psycopg://", 1)
+
     if value.startswith("postgresql://"):
         return value.replace("postgresql://", "postgresql+psycopg://", 1)
+
     return value
 
 
