@@ -432,19 +432,56 @@ $('#delete-goal-button').addEventListener('click', async () => {
 $('#milestone-form').addEventListener('submit', async event => {
   if (event.submitter?.value === 'cancel') return;
   event.preventDefault();
-  const payload = { title: $('#milestone-title-input').value, description: $('#milestone-description-input').value, notes: $('#milestone-notes-input').value };
+
+  const editingId = state.milestoneEditId;
+
+  const payload = {
+    title: $('#milestone-title-input').value,
+    description: $('#milestone-description-input').value,
+    notes: $('#milestone-notes-input').value 
+  };
+
   try {
-    if (state.milestoneEditId) {
+    if (editingId) {
       payload.completed = $('#milestone-complete-input').checked;
-      await api(`/api/milestones/${state.milestoneEditId}`, { method: 'PATCH', body: JSON.stringify(payload) });
+
+      const data = await api(`/api/milestones/${editingId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload)
+      });
+
+      const index = state.milestones.findIndex(m => m.id === editingId);
+
+      if (index !== -1) {
+        state.milestones[index] = data.milestone;
+      }
+
     } else {
       const openPosition = findOpenMilestonePosition();
+
       payload.x = openPosition.x;
       payload.y = openPosition.y;
-      await api(`/api/goals/${state.currentGoal.id}/milestones`, { method: 'POST', body: JSON.stringify(payload) });
+
+      const data = await api(
+        `/api/goals/${state.currentGoal.id}/milestones`,
+        {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        }
+      );
+
+      // Use the milestone Neon just returned.
+      state.milestones.push(data.milestone);
     }
-    $('#milestone-dialog').close(); await refreshCurrentGoal(); toast(state.milestoneEditId ? 'MILESTONE UPDATED' : 'WAYPOINT ADDED');
-  } catch (error) { $('#milestone-error').textContent = error.message; }
+
+    $('#milestone-dialog').close();
+    renderRoadmap();
+
+    toast(editingId ? 'MILESTONE UPDATED' : 'WAYPOINT ADDED');
+
+  } catch (error) {
+    $('#milestone-error').textContent = error.message;
+  }
 });
 
 $('#delete-milestone-button').addEventListener('click', async () => {
