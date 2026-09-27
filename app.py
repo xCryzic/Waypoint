@@ -95,7 +95,7 @@ def is_railway():
 
 
 def create_app(test_config=None):
-    app = Flask(__name__, static_folder="public", static_url_path="/public")
+    app = Flask(__name__, static_folder="public", static_url_path="")
     raw_database_url = os.environ.get("DATABASE_URL", "")
     if is_railway() and not raw_database_url and not test_config:
         raise RuntimeError("DATABASE_URL is required on Railway. Link the PostgreSQL service variable before deploying.")
