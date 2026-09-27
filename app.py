@@ -230,11 +230,18 @@ def password_matches(password, stored):
         return False
     return legacy_node_password_matches(password, stored)
 
-
 def register_routes(app):
     @app.get("/")
     def index():
         return send_from_directory(ROOT, "index.html")
+
+    @app.get("/styles.css")
+    def styles():
+        return send_from_directory(ROOT / "public", "styles.css")
+
+    @app.get("/app.js")
+    def javascript():
+        return send_from_directory(ROOT / "public", "app.js")
 
     @app.get("/health")
     def health():
