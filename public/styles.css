@@ -172,3 +172,12 @@ textarea { resize: vertical; }
 }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+.milestone-node.saving {
+  opacity: 0.72;
+  animation: milestone-saving 1s ease-in-out infinite alternate;
+}
+
+@keyframes milestone-saving {
+  from { opacity: 0.55; }
+  to { opacity: 0.9; }
+}

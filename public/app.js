@@ -168,12 +168,31 @@ function findOpenMilestonePosition() {
 
 function renderNodes() {
   const layer = $('#node-layer');
-  layer.innerHTML = state.milestones.map(m => `<article class="milestone-node ${m.completed ? 'complete' : ''}" data-milestone-id="${m.id}" style="left:${m.x}px;top:${m.y}px" tabindex="0" role="button" aria-label="${escapeHtml(m.title)}, ${m.completed ? 'complete' : 'active'}">
-    <span class="node-dot"></span><strong>${escapeHtml(m.title)}</strong><small>${m.completed ? 'COMPLETE' : 'MILESTONE'}</small>
-  </article>`).join('');
+
+  layer.innerHTML = state.milestones.map(m => `
+    <article
+      class="milestone-node ${m.completed ? 'complete' : ''} ${m.saving ? 'saving' : ''}"
+      data-milestone-id="${m.id}"
+      style="left:${m.x}px;top:${m.y}px"
+      tabindex="0"
+      role="button"
+      aria-label="${escapeHtml(m.title)}, ${m.saving ? 'saving' : m.completed ? 'complete' : 'active'}"
+    >
+      <span class="node-dot"></span>
+      <strong>${escapeHtml(m.title)}</strong>
+      <small>${m.saving ? 'SAVING...' : m.completed ? 'COMPLETE' : 'MILESTONE'}</small>
+    </article>
+  `).join('');
+
   $$('.milestone-node').forEach(node => {
     node.addEventListener('pointerdown', startNodePointer);
-    node.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); nodeAction(Number(node.dataset.milestoneId)); } });
+
+    node.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        nodeAction(Number(node.dataset.milestoneId));
+      }
+    });
   });
 }
 
@@ -479,7 +498,7 @@ $('#milestone-form').addEventListener('submit', async event => {
     payload.y = openPosition.y;
 
     // Temporary ID used until Neon gives us the real one
-    const tempId = `temp-${Date.now()}`;
+    const tempId = -Date.now();
 
     // Create the milestone locally FIRST
     const optimisticMilestone = {
