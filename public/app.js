@@ -438,10 +438,13 @@ $('#milestone-form').addEventListener('submit', async event => {
   const payload = {
     title: $('#milestone-title-input').value,
     description: $('#milestone-description-input').value,
-    notes: $('#milestone-notes-input').value 
+    notes: $('#milestone-notes-input').value
   };
 
   try {
+    // ─────────────────────────────
+    // EDIT EXISTING MILESTONE
+    // ─────────────────────────────
     if (editingId) {
       payload.completed = $('#milestone-complete-input').checked;
 
@@ -450,18 +453,62 @@ $('#milestone-form').addEventListener('submit', async event => {
         body: JSON.stringify(payload)
       });
 
-      const index = state.milestones.findIndex(m => m.id === editingId);
+      const index = state.milestones.findIndex(
+        milestone => milestone.id === editingId
+      );
 
       if (index !== -1) {
         state.milestones[index] = data.milestone;
       }
 
-    } else {
-      const openPosition = findOpenMilestonePosition();
+      $('#milestone-dialog').close();
+      renderRoadmap();
 
-      payload.x = openPosition.x;
-      payload.y = openPosition.y;
+      toast('MILESTONE UPDATED');
+      return;
+    }
 
+
+    // ─────────────────────────────
+    // CREATE NEW MILESTONE
+    // ─────────────────────────────
+
+    const openPosition = findOpenMilestonePosition();
+
+    payload.x = openPosition.x;
+    payload.y = openPosition.y;
+
+    // Temporary ID used until Neon gives us the real one
+    const tempId = `temp-${Date.now()}`;
+
+    // Create the milestone locally FIRST
+    const optimisticMilestone = {
+      id: tempId,
+      goal_id: state.currentGoal.id,
+      title: payload.title,
+      description: payload.description,
+      notes: payload.notes,
+      x: payload.x,
+      y: payload.y,
+      completed: false,
+      saving: true
+    };
+
+    // Immediately put it on the roadmap
+    state.milestones.push(optimisticMilestone);
+
+    // Close dialog + render instantly
+    $('#milestone-dialog').close();
+    renderRoadmap();
+
+    toast('WAYPOINT ADDED');
+
+
+    // ─────────────────────────────
+    // SAVE TO NEON IN BACKGROUND
+    // ─────────────────────────────
+
+    try {
       const data = await api(
         `/api/goals/${state.currentGoal.id}/milestones`,
         {
@@ -470,14 +517,32 @@ $('#milestone-form').addEventListener('submit', async event => {
         }
       );
 
-      // Use the milestone Neon just returned.
-      state.milestones.push(data.milestone);
+      // Find our temporary milestone
+      const index = state.milestones.findIndex(
+        milestone => milestone.id === tempId
+      );
+
+      // Replace it with the real database version
+      if (index !== -1) {
+        state.milestones[index] = {
+          ...data.milestone,
+          saving: false
+        };
+
+        renderRoadmap();
+      }
+
+    } catch (error) {
+      // Neon failed — remove the temporary milestone
+      state.milestones = state.milestones.filter(
+        milestone => milestone.id !== tempId
+      );
+
+      renderRoadmap();
+
+      toast('FAILED TO SAVE WAYPOINT');
+      console.error('Failed to save milestone:', error);
     }
-
-    $('#milestone-dialog').close();
-    renderRoadmap();
-
-    toast(editingId ? 'MILESTONE UPDATED' : 'WAYPOINT ADDED');
 
   } catch (error) {
     $('#milestone-error').textContent = error.message;
